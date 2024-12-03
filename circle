@@ -1,0 +1,18 @@
+int size=3;
+        bool state = PLAYER_O;
+
+        for (int i = 0; i < size; i++) {
+            for(int j=0; j<size; j++) {
+                float cellWidth = 2.0f / size;
+                float x = -1.0 + j * cellWidth + cellWidth / 2.0; 
+                float y = 1.0 - i * cellWidth - cellWidth / 2.0; 
+                    glColor3f(0.0f, 1.0f, 0.0f); // Blue for O
+                    float r = cellWidth * 0.3f;
+                    glBegin(GL_LINE_LOOP);
+                        for (int k = 0; k < 100; k++) {
+                            float angle = 2 * M_PI * k / 100; // Calculate angle for circle points
+                            glVertex2f(x + r * cos(angle), y + r * sin(angle)); // Circle points
+                        }
+                    glEnd();
+            }
+        }
