@@ -1,0 +1,190 @@
+cardboard
+kiradoorian
+Invisible
+
+seebo — 04/21/2024 8:21 PM
+yo
+can you screenshare for me?
+cardboard — 04/21/2024 8:21 PM
+yeah
+cardboard started a call that lasted 7 minutes. — 04/21/2024 8:21 PM
+seebo — 04/21/2024 8:22 PM
+hello hold on
+seebo — 09/16/2024 10:19 AM
+oh sh we alr friends 😭😭
+cardboard — 09/16/2024 12:55 PM
+LMAOO
+seebo — Today at 2:10 PM
+#include <iostream>
+#include "GameState.h"
+#include "Graph.h"
+#include "LinkedList.h"
+
+using namespace std;
+Expand
+message.txt
+6 KB
+welp thats my entire main.cpp
+cardboard — Today at 2:27 PM
+thank youuuuu
+﻿
+#include <iostream>
+#include "GameState.h"
+#include "Graph.h"
+#include "LinkedList.h"
+
+using namespace std;
+
+// from lecture 19
+int maxReward(Vertex<GameState>* node, int player){
+    if (node->edgeList.size() == 0){
+        if (node->data.hasWon(player)){
+            return 100;
+        }
+        else if (node->data.hasWon(!player)){
+            return -100;
+        }
+        else{
+            return 0;
+        }
+    }
+    else{
+        int reward = maxReward(node->edgeList[0]->to, player);
+        for (int i = 1; i < node->edgeList.size(); i++){
+            int curr = maxReward(node->edgeList[i]->to, player);
+            if (node->data.currentTurn == player){
+                if (curr > reward){
+                    reward = curr;
+                }
+            }
+            else {
+                if (curr < reward){
+                    reward = curr;
+                }
+            }
+        }
+        return reward;
+    }
+}
+
+// find the maxReward node
+int rewardPos(Vertex<GameState>* node, int player){
+    int reward = maxReward(node->edgeList[0]->to, player);
+            int rewardPos = 0;
+            for (int i = 0; i < node->edgeList.size(); i++){
+                int curr = maxReward(node->edgeList[i]->to, player);
+                if (curr > reward){
+                    reward = curr;
+                    rewardPos = i;
+                }
+            }
+            return rewardPos;
+    
+}
+
+int main(){
+
+    // first iteration, literally when you first start up the game
+    GameState game; // X is 0. O is 1.
+    Graph<GameState> g; // creates the first tree
+
+
+        Vertex<GameState>* start = new Vertex<GameState>(game); // set the root, start, to a gameState object with value "game"
+        g.addVertex(start); // add the root to the list of game states
+
+        Vertex<GameState>* move = nullptr; // to save the move later on
+
+        LinkedList<Vertex<GameState>*> toExpand; // linkedlist to help expand the tree
+        toExpand.append(start); // first add the root
+
+        while (!toExpand.isEmpty()){ // recursively expands the tree starting from the root
+            Vertex<GameState>* v = toExpand.removeFirst();
+            if (!v->data.done){
+                for (int i = 0; i < game.size; i++){
+                    for (int j = 0; j < game.size; j++){
+                        GameState temp = v->data;
+                        bool valid = temp.play(i, j);
+                        if (valid){
+                            Vertex<GameState>* u = new Vertex<GameState>(temp);
+                            g.addVertex(u);
+                            g.addDirectedEdge(v, u, 0);
+                            toExpand.append(u);
+                        }
+                    }
+                }
+            }
+        }
+
+    while (!game.done){ // this is where it gets juicy. this starts the game loop
+        system("clear"); // clears screen every iteration
+        cout << game << endl; // cout the current game state
+
+        int x, y;
+        
+
+
+        // ai is on (assuming that player is X)
+        if(!game.currentTurn){ // player is asked to move
+        cout << "Enter coordinates (" << (game.currentTurn ? "O" : "X") << "): "; // only asks player this prompt if AI is on
+        cin >> x >> y;
+
+        game.play(x, y);
+        
+        }
+        else { // ai moves
+            
+            
+            int bestChild = rewardPos(move, 1); // finds the best child under move node (or vertex)
+            game.play(move->edgeList[bestChild]->to->data.lastMove.x, move->edgeList[bestChild]->to->data.lastMove.y); // "move->edgeList[bestChild]->to" is the child and it is of type Vertex*, the data of that child is an object of type GameState, in GameState there is a member variable called lastMove which contains the coordinates for the lastMove played in the game
+            
+        
+        }
+
+        // AFTER EVERY MOVE, IT SHOULD UPDATE THE TREE BY CHANGING THE ROOT TO THE NEW MOVE
+        move = new Vertex<GameState>(game); // after the move has been played, then it creates a "temporary" gamestate object so it updates the ai's game state tree
+        Graph<GameState> g; // creating a new graph after every move 
+        g.addVertex(move); // adds this move to the list of game states || how does this work because it still works if I don't create a new graph after every move, is there soemwhere in my code where the graph's vertex are wiped?
+        toExpand.append(move); // expand from this move onwards
+
+        while (!toExpand.isEmpty()){
+            Vertex<GameState>* v = toExpand.removeFirst();
+            if (!v->data.done){
+                for (int i = 0; i < game.size; i++){
+                    for (int j = 0; j < game.size; j++){
+                        GameState temp = v->data;
+                        bool valid = temp.play(i, j);
+                        if (valid){
+                            Vertex<GameState>* u = new Vertex<GameState>(temp);
+                            g.addVertex(u);
+                            g.addDirectedEdge(v, u, 0);
+                            toExpand.append(u);
+                        }
+                    }
+                }
+            }
+        }
+
+        
+
+        
+
+    }
+
+    system("clear");
+    cout << game << endl;
+
+    if (game.hasWon(0)){
+        cout << "X wins" << endl;
+    }
+    else if (game.hasWon(1)){
+        cout << "O wins" << endl;
+    }
+    else {
+        cout << "It's a tie" << endl;
+    }
+    cout << endl;
+    
+    return 0;
+}
+message.txt
+6 KB
