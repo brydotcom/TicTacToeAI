@@ -24,7 +24,7 @@ public:
         } else if(hovered) {
             glColor3f(0.8f, 0.8f, 0.8f); //hovered over
         } else {
-            glColor3f(0.5f, 0.5f, 0.5f); //default
+            glColor3f(0.2f, 0.36f, 0.21f); //default
         }
 
         //draw rectangle
