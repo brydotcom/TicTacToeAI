@@ -32,9 +32,13 @@ private:
     int size;
     std::vector<std::vector<int>> board;
     bool showStart, showEnd, showGame;
-    Button three;
-    Button four;
-    Button five;
+    Button titleButton;
+    Button startButton;
+    Button AiButton;
+    Button humanButton;
+    Button threeButton;
+    Button fourButton;
+    Button fiveButton;
 
 public:
     Game(){
@@ -49,10 +53,26 @@ public:
         
         // home = Button(-0.95f, 0.95f, 0.15f, "Home", false, false);
         // reset = Button(0.8f, 0.95f, 0.15f, "Retry", false, false);
+        titleButton = Button(0.05f, 0.90f, 1.00f, 0.15f, "Tic-Tac-Toe", false, false);
+        startButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "START", false, false);
+        AiButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "AI", false, false);
+        humanButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "HUMAN", false, false);
+        threeButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "3 x 3", false, false);
+        fourButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "4 x 4", false, false);
+        fiveButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "5 x 5", false, false);
+        
         
         // drawingBoard();
         home.draw();
-        reset.draw();   
+        reset.draw();  
+        titleButton.draw(); 
+        startButton.draw(); 
+        AiButton.draw();
+        humanButton.draw(); 
+        threeButton.draw(); 
+        fourButton.draw(); 
+        fiveButton.draw(); 
+
 
         // quitGame = Button("Quit", -0.3, 0.0, 0.2, 0.2);
         // OWon = Button("Player O Won!", -0.3, 0.6, 0.2, 0.2);
@@ -118,10 +138,9 @@ public:
         glClearColor(0.75f, 0.75f, 0.75f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        three.draw(); //3x3 board
-        four.draw(); //4x4 board
-        five.draw(); //5x5 board
-
+        threeButton.draw(); 
+        fourButton.draw(); 
+        fiveButton.draw(); 
         // if(three.)
         
         glutSwapBuffers();
