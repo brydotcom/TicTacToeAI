@@ -30,20 +30,20 @@ public:
         //draw rectangle
         glLineWidth(2.0f);
         glBegin(GL_POLYGON);
-            glVertex2f(x - w, y - h);
-            glVertex2f(x + w, y - h);
-            glVertex2f(x + w, y + h);
-            glVertex2f(x - w, y + h);
+            glVertex2f(x - w / 2, y - h / 2);
+            glVertex2f(x + w / 2, y - h / 2);
+            glVertex2f(x + w / 2, y + h / 2);
+            glVertex2f(x - w / 2, y + h / 2);
         glEnd();
 
         //draw border
-        glColor3f(0.0,0.0, 0.0);
+        glColor3f(1.0,1.0, 1.0);
         glLineWidth(3.0f);
         glBegin(GL_LINE_LOOP);
-            glVertex2f(x - w, y - h);
-            glVertex2f(x + w, y - h);
-            glVertex2f(x + w, y + h);
-            glVertex2f(x - w, y + h);
+            glVertex2f(x - w / 2, y - h / 2);
+            glVertex2f(x + w / 2, y - h / 2);
+            glVertex2f(x + w / 2, y + h / 2);
+            glVertex2f(x - w / 2, y + h / 2);
         glEnd();
 
         drawText(x, y, text);
@@ -62,7 +62,7 @@ public:
     }
 
     void drawText(float x, float y, const std::string& text) {
-        glColor3f(0.0f, 0.0f, 0.0f); // Black text
+        glColor3f(1.0f, 1.0f, 1.0f); // Black text
 
         // //find width of text
         int textWidth = 0;
@@ -76,7 +76,7 @@ public:
         glRasterPos2f(x - (text.size() * 0.01f), y - 0.01f); // Center text
         for (char c : text) {
             glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
-    }
+        }
     }
 
 
