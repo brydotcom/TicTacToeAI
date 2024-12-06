@@ -3,6 +3,7 @@
 
 #include "GL/freeglut_std.h"
 #include <string>
+#include <iostream>
 
 class Button{
 private:
@@ -49,20 +50,21 @@ public:
         drawText(x, y, text);
     }
 
-    void setHover(bool hovered) {
-        this->hovered = hovered;
-    }
+    void setHover(bool hovered) { this->hovered = hovered; }
 
-    void setPressed(bool isPressed) {
-        this->isPressed = isPressed;
-    }
+    void setPressed(bool isPressed) { this->isPressed = isPressed; }
 
     bool isClicked(float mx, float my) {
-        return mx > x - w && mx < x + w && my > y - h && my < y + h;
+        std::cout<<"Button is clicked"<<std::endl;
+        float l = x - w / 2;
+        float r = x + w / 2;
+        float b = y - h / 2;
+        float t = y + h / 2;
+        return mx > l && mx < r && my > b && my < t;
     }
 
     void drawText(float x, float y, const std::string& text) {
-        glColor3f(1.0f, 1.0f, 1.0f); // Black text
+        glColor3f(1.0f, 1.0f, 1.0f);
 
         // //find width of text
         int textWidth = 0;
@@ -71,14 +73,16 @@ public:
         }
 
         // //find center position
-        float textX = x - (textWidth / 2.0f);
-        float textY = y - 0.012;
-        glRasterPos2f(x - (text.size() * 0.01f), y - 0.01f); // Center text
+        glRasterPos2f(x - textWidth / 400.0f, y - 0.01f); // Center text
         for (char c : text) {
             glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
         }
     }
 
+    void reset() {
+        hovered = false;
+        isPressed = false;
+    }
 
     ~Button() = default;
 };
