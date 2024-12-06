@@ -406,46 +406,46 @@ public:
 
  void mediumAI() {
     if (!playerX && mediumAIsetting && !gameOver) {
-        // Try to find a winning move
+        
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                if (board[i][j] == 0) { // Empty cell
-                    board[i][j] = 2; // AI's move
-                    if (checkWin(2)) { // Check if AI wins
-                        playerX = true; // Switch to player's turn after AI move
+                if (board[i][j] == 0) { 
+                    board[i][j] = 2; 
+                    if (checkWin(2)) { 
+                        playerX = true; 
                         return;
                     } else {
-                        board[i][j] = 0; // Undo the move if it doesn’t win
+                        board[i][j] = 0; 
                     }
                 }
             }
         }
 
-        // Try to block player's winning move
+        
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                if (board[i][j] == 0) { // Empty cell
-                    board[i][j] = 1; // Pretend it's the player's move
-                    if (checkWin(1)) { // Check if player wins
-                        board[i][j] = 2; // Block the move by playing AI's move here
-                        playerX = true; // Switch to player's turn after AI move
+                if (board[i][j] == 0) { 
+                    board[i][j] = 1; 
+                    if (checkWin(1)) { 
+                        board[i][j] = 2; 
+                        playerX = true; 
                         return;
                     } else {
-                        board[i][j] = 0; // Undo the move if it doesn't block
+                        board[i][j] = 0; 
                     }
                 }
             }
         }
 
-        // Random move as fallback if no winning or blocking move
+       
         int x, y;
         do {
             x = rand() % size;
             y = rand() % size;
-        } while (board[x][y] != 0); // Keep searching until we find an empty spot
+        } while (board[x][y] != 0); 
 
-        board[x][y] = 2; // AI makes the move
-        playerX = true;  // Switch to player X turn
+        board[x][y] = 2; 
+        playerX = true;  
     }
 }
 
