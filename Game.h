@@ -56,7 +56,7 @@ public:
         //start screen buttons
         titleButton = Button(0.05f, 0.90f, 1.00f, 0.2f, "Tic-Tac-Toe", false, false);
         startButton = Button(0.0f, 0.0f, 0.40f, 0.2f, "START", false, false);
-        AiButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "AI", false, false);
+        AiButton = Button(0.0f, 0.2f, 0.40f, 0.2f, "AI", false, false);
         humanButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "HUMAN", false, false);
         
         //gameboard size buttons
