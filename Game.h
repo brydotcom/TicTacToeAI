@@ -31,52 +31,42 @@ private:
     Button reset;
     int size;
     std::vector<std::vector<int>> board;
-    bool showStart, showEnd, showGame;
+    bool showStart, showEnd, showGame, ignoreClick;
+
     Button titleButton;
     Button startButton;
     Button AiButton;
     Button humanButton;
     Button threeButton;
     Button fourButton;
-    Button fiveButton;
+    Button fiveButton; 
+    Button start;
 
 public:
     Game(){
         playerX = true;
         AI = false;
-        size=5;
-        showStart = false;
+        size=3;
+        showStart = true;
         showEnd = false;
-        showGame = true;
-
+        showGame = false;
+        ignoreClick = true;
         board.resize(size, std::vector<int>(size,0));
         
-        // home = Button(-0.95f, 0.95f, 0.15f, "Home", false, false);
-        // reset = Button(0.8f, 0.95f, 0.15f, "Retry", false, false);
-        titleButton = Button(0.05f, 0.90f, 1.00f, 0.15f, "Tic-Tac-Toe", false, false);
-        startButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "START", false, false);
-        AiButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "AI", false, false);
-        humanButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "HUMAN", false, false);
-        threeButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "3 x 3", false, false);
-        fourButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "4 x 4", false, false);
-        fiveButton = Button(0.75f, 0.90f, 0.40f, 0.15f, "5 x 5", false, false);
+        //start screen buttons
+        titleButton = Button(0.05f, 0.90f, 1.00f, 0.2f, "Tic-Tac-Toe", false, false);
+        startButton = Button(0.0f, 0.0f, 0.40f, 0.2f, "START", false, false);
+        AiButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "AI", false, false);
+        humanButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "HUMAN", false, false);
         
-        
-        // drawingBoard();
-        home.draw();
-        reset.draw();  
-        titleButton.draw(); 
-        startButton.draw(); 
-        AiButton.draw();
-        humanButton.draw(); 
-        threeButton.draw(); 
-        fourButton.draw(); 
-        fiveButton.draw(); 
+        //gameboard size buttons
+        threeButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "3 x 3", false, false);
+        fourButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "4 x 4", false, false);
+        fiveButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "5 x 5", false, false);
 
-
-        // quitGame = Button("Quit", -0.3, 0.0, 0.2, 0.2);
-        // OWon = Button("Player O Won!", -0.3, 0.6, 0.2, 0.2);
-        // XWon = Button("Player X Won!", -0.3, 0.6, 0.2, 0.2);
+        //game screen buttons
+        home = Button(-0.9f, 0.95f, 0.2f, 0.15f, "Home", false, false);
+        reset = Button(0.9f, 0.95f, 0.2f, 0.15f, "Retry", false, false); 
     }
 
     void drawingBoard() {
@@ -134,16 +124,42 @@ public:
         glutSwapBuffers();
     }
 
+    void setStart(){
+        showStart = true;
+        showGame = false;
+        showEnd = false;
+    }
+
+    void setGame() {
+        showStart = false;
+        showGame = true;
+        showEnd = false;
+        ignoreClick = true;
+    }
+
+    void setEnd() {
+        showStart = false;
+        showGame = false;
+        showEnd = true;
+    }
+
     void startScreen() {
-        glClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+        glClearColor(0.4f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         threeButton.draw(); 
         fourButton.draw(); 
         fiveButton.draw(); 
-        // if(three.)
-        
-        glutSwapBuffers();
+        titleButton.draw(); 
+        startButton.draw(); 
+        AiButton.draw();
+        humanButton.draw(); 
+    }
+
+    void gameScreen() {
+        drawingBoard();
+        home.draw();
+        reset.draw();
     }
 
     void endScreen() {
@@ -154,30 +170,46 @@ public:
         } else if(checkWin(playerX)) {
 
         }
-        home.draw();
-        reset.draw();
-        glutSwapBuffers();
+        // home.draw();
+        // reset.draw();
     }
 
     void updateState() {
         if(showStart) startScreen();
-        else if (showGame) drawingBoard();
+        else if (showGame) gameScreen();
         else if (showEnd) endScreen();
+        glutSwapBuffers();
     }
 
     void handleMouseClick(int button, int state, float x, float y) {
-        //converts mouse coords to normal coords
-        if(button == 0 && state == 0) {
-            float normX = (2.0f * (x / glutGet(GLUT_WINDOW_WIDTH))) - 1.0f;
-            float normY = 1.0f - (2.0f * (y / glutGet(GLUT_WINDOW_HEIGHT)));
+        if(showEnd) {
+            return;
+        }
 
+        //converts mouse coords to normal coords
+        float normX = (2.0f * (x / glutGet(GLUT_WINDOW_WIDTH))) - 1.0f;
+        float normY = 1.0f - (2.0f * (y / glutGet(GLUT_WINDOW_HEIGHT)));
+        
+        if(state == 0) {
+            if(threeButton.isClicked(normX, normY)) {
+                resizeBoard(3);
+            } else if(fourButton.isClicked(normX, normY)) {
+                resizeBoard(4);
+            } else if(fiveButton.isClicked(normX, normY)) {
+                resizeBoard(5);
+            }
             if(showStart) {
-                if(normX > -0.5 && normX < 0.5f && normY > 0.0f && normY < 0.3f) {
-                    showStart = false;
-                    showGame = true;
-                    showEnd = false;
+                if(startButton.isClicked(normX, normY)) {
+                    setGame();
                 }
-            } else if(showGame) {
+            } 
+        }
+        if(button == 0 && state == 0) {
+                if(showGame) {
+                    if(ignoreClick) {
+                        ignoreClick = false;
+                        return;
+                    }
                 //determine square clicked
                 int row = static_cast<int>((1.0f - normY) * size / 2);
                 int col = static_cast<int>((normX + 1.0f) * size / 2);
@@ -191,11 +223,11 @@ public:
                         drawingBoard();
 
                         if(checkWin(playerX ? 2 : 1)) {
-                            gameOver = true;
+                            showEnd = true;
                             return;
                         }
                         if(isDraw()) {
-                            gameOver = true;
+                            showEnd = true;
                             std::cout<<"It's a draw!"<<std::endl;
                             return;
                         }
@@ -203,14 +235,11 @@ public:
                 }  
             } else if(showEnd) {
                 if(normX > -0.5 && normX < 0.5f && normY > 0.0f && normY < 0.3f) {
-                    showStart = true;
-                    showGame = false;
-                    showEnd = false;
                     resetGame();
                 }
-            }
-            glutPostRedisplay();
-        }         
+            }  
+        glutPostRedisplay();
+        }
     }
 
     // check if a player has won
@@ -287,6 +316,7 @@ public:
         board.clear();
         board.resize(size, std::vector<int>(size, 0));
         resetGame();
+        std::cout<<"Board size changed to "<<size<<"x"<<size<<std::endl;
     }
 
     void resetGame() {
@@ -326,49 +356,7 @@ public:
         }
     }
 
-    // void selectThree(){
-    //     unPressButtons();
-    //     button3.setDown(true);
-    //     std::cout<<"Will change to 3x3"<<std::endl;
-    //     for(int i=0; i<size; i++){
-    //         delete[] r[i];
-    //     }
-    //     delete[] r;
-    //     size=3;
-    //     init();
-    // }
-
-    // void selectFour(){
-    //     unPressButtons();
-    //     button4.setDown(true);
-    //     std::cout<<"Will change to 4x4"<<std::endl;
-    //     for(int i=0; i<size; i++){
-    //         delete[] r[i];
-    //     }
-    //     delete[] r;
-    //     size=4;
-    //     init();
-    // }
-
-    // void selectFive(){
-    //     unPressButtons();
-    //     button5.setDown(true);
-    //     std::cout<<"Will change to 5x5"<<std::endl;
-    //     for(int i=0; i<size; i++){
-    //         delete[] r[i];
-    //     }
-    //     delete[] r;
-    //     size=5;
-    //     init();
-    // }
-
-
-    ~Game() {
-    // for(int i=0; i<size; i++) {
-    //     delete[] board[i];
-    // }
-    // delete[] board;
-    }
+    ~Game() {}
 
 };
 
