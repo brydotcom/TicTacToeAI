@@ -20,8 +20,6 @@ private:
     Button start;
     Button opp;
     Button bs;
-    float mouseX;
-    float mouseY;
 
     bool easy, medium, hard;
     bool three, four, five;
@@ -134,8 +132,7 @@ public:
             if(startButton.isClicked(normX, normY)) {
                 game = true;
                 std::cout << "Start Button Clicked!" << std::endl;
-            } 
-            // glutPostRedisplay();
+            }
         }
     }
 
