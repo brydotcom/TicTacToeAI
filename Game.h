@@ -26,43 +26,58 @@ struct Vec{
 class Game{
 
 private:
-    bool playerX, AI, gameOver;
+    bool playerX, gameOver;
+    bool easyAIsetting, mediumAIsetting, hardAIsetting;
+    bool showAiScreen;
     Button home;
     Button reset;
     int size;
     std::vector<std::vector<int>> board;
     bool showStart, showEnd, showGame, ignoreClick;
 
+
     Button titleButton;
     Button startButton;
+    Button easyAiButton;
+    Button mediumAiButton;
+    Button hardAiButton;
     Button AiButton;
     Button humanButton;
     Button threeButton;
     Button fourButton;
     Button fiveButton; 
     Button start;
+    Button opp;
+    Button bs;
 
 public:
     Game(){
         playerX = true;
-        AI = false;
+        easyAIsetting = false;
+        mediumAIsetting = false;
+        hardAIsetting = false;
         size=3;
         showStart = true;
+        showAiScreen = false; 
         showEnd = false;
         showGame = false;
         ignoreClick = true;
         board.resize(size, std::vector<int>(size,0));
         
         //start screen buttons
-        titleButton = Button(0.05f, 0.90f, 1.00f, 0.2f, "Tic-Tac-Toe", false, false);
-        startButton = Button(0.0f, 0.0f, 0.40f, 0.2f, "START", false, false);
-        AiButton = Button(0.0f, 0.2f, 0.40f, 0.2f, "AI", false, false);
-        humanButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "HUMAN", false, false);
-        
+        titleButton = Button(0.0f, 0.60f, 1.00f, 0.2f, "Tic-Tac-Toe", false, false);
+        startButton = Button(0.0f, -0.6f, 0.50f, 0.2f, "START", false, false);
+        humanButton = Button(-0.25f, 0.2f, 0.25f, 0.2f, "1v1", false, false);
+        easyAiButton = Button(0.05f, 0.2f, 0.35f, 0.2f, "Easy", false, false);
+        mediumAiButton = Button(0.4f, 0.2f, 0.35f, 0.2f, "Med", false, false);
+        hardAiButton = Button(0.75f, 0.2f, 0.35f, 0.2f, "Hard", false, false);
+        opp = Button(-0.7f, 0.17f, 0.35f, 0.2f, "Opponent:", false, false);
+        bs = Button(-0.7f, -0.23f, 0.35f, 0.2f, "Board Size:", false, false);
+
         //gameboard size buttons
-        threeButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "3 x 3", false, false);
-        fourButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "4 x 4", false, false);
-        fiveButton = Button(0.75f, 0.90f, 0.40f, 0.2f, "5 x 5", false, false);
+        threeButton = Button(-0.2f, -0.2f, 0.35f, 0.2f, "3 x 3", false, false);
+        fourButton = Button(0.15f, -0.2f, 0.35f, 0.2f, "4 x 4", false, false);
+        fiveButton = Button(0.5f, -0.2f, 0.35f, 0.2f, "5 x 5", false, false);
 
         //game screen buttons
         home = Button(-0.9f, 0.95f, 0.2f, 0.15f, "Home", false, false);
@@ -128,12 +143,20 @@ public:
         showStart = true;
         showGame = false;
         showEnd = false;
+        showAiScreen = false;
     }
 
+    void setAiScreen(){
+        showStart = false; 
+        showAiScreen = true;
+        showGame = false; 
+        showEnd = false;
+    }
     void setGame() {
         showStart = false;
         showGame = true;
         showEnd = false;
+        showAiScreen = false;
         ignoreClick = true;
     }
 
@@ -152,8 +175,12 @@ public:
         fiveButton.draw(); 
         titleButton.draw(); 
         startButton.draw(); 
-        AiButton.draw();
         humanButton.draw(); 
+        easyAiButton.draw();
+        mediumAiButton.draw();
+        hardAiButton.draw();
+        opp.draw2();
+        bs.draw2();
     }
 
     void gameScreen() {
@@ -170,8 +197,6 @@ public:
         } else if(checkWin(playerX)) {
 
         }
-        // home.draw();
-        // reset.draw();
     }
 
     void updateState() {
@@ -193,13 +218,29 @@ public:
         if(state == 0) {
             if(threeButton.isClicked(normX, normY)) {
                 resizeBoard(3);
+                // setGame();
             } else if(fourButton.isClicked(normX, normY)) {
                 resizeBoard(4);
             } else if(fiveButton.isClicked(normX, normY)) {
                 resizeBoard(5);
             }
+
+            if(easyAiButton.isClicked(normX, normY)){
+                easyAIsetting = true;
+                setGame();
+            }else if (humanButton.isClicked(normX, normY)){
+                setGame();
+            }else if(mediumAiButton.isClicked(normX, normY)){
+                mediumAIsetting = true;
+                setGame();
+            }else if (hardAiButton.isClicked(normX, normY)){
+                hardAIsetting = true;
+                setGame();
+            }
+
             if(showStart) {
                 if(startButton.isClicked(normX, normY)) {
+                    std::cout << "Start Button Clicked!" << std::endl;
                     setGame();
                 }
             } 
@@ -219,6 +260,7 @@ public:
                     //make sure cell is empty
                     if(board[row][col] == 0) { //if cell is empty
                         board[row][col] = playerX ? 1 : 2;
+                        // std:: cout << playerX;
                         playerX = !playerX; 
                         drawingBoard();
 
@@ -231,12 +273,35 @@ public:
                             std::cout<<"It's a draw!"<<std::endl;
                             return;
                         }
+
+                        if(!playerX){
+                            if(easyAIsetting){
+                                easyAI();
+                            } else if(mediumAIsetting){
+                                mediumAI();
+                            } else if (hardAIsetting){
+                                hardAI();
+                            }
+
+                            drawingBoard();
+                            if(checkWin(playerX ? 2 : 1)) {
+                                showEnd = true;
+                                return;
+                            }
+                            if(isDraw()) {
+                                showEnd = true;
+                                std::cout << "It's a draw" << std::endl;
+                                return;
+                            }
+                            
+                        }
                     }
                 }  
-            } else if(showEnd) {
-                if(normX > -0.5 && normX < 0.5f && normY > 0.0f && normY < 0.3f) {
-                    resetGame();
-                }
+            } 
+            else if(showEnd) {
+            //     if(normX > -0.5 && normX < 0.5f && normY > 0.0f && normY < 0.3f) {
+            //         resetGame();
+            //     }
             }  
         glutPostRedisplay();
         }
@@ -322,37 +387,138 @@ public:
     void resetGame() {
         playerX = true;
         gameOver = false;
+        easyAIsetting = false;
+        mediumAIsetting = false;
+        hardAIsetting = false;
+        board.clear();
         board.resize(size, std::vector<int>(size, 0));
         drawingBoard();
     }
 
-    void easyAI() {
-        if (!playerX && !gameOver) {
-            for (int i = 0; i < size; i++) {
-                for(int j=0; j < size; j++) {
-                    if (board[i][j] == 0) {
-                        board[i][j] = !playerX;
-                        break;
+ void easyAI() {
+    if (!playerX && !gameOver) {
+        for (int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                if (board[i][j] == 0) {
+                    board[i][j] = 2; // AI plays as 'O' (2)
+                    playerX = true;  // Switch to player X after AI move.
+                    return;  // Only one move at a time.
+                }
+            }
+        }
+    }
+}
+
+
+ void mediumAI() {
+    if (!playerX && mediumAIsetting && !gameOver) { 
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (board[i][j] == 0) { 
+                    board[i][j] = 2; 
+                    if (checkWin(2)) { 
+                        playerX = true; 
+                        return;
+                    } else {
+                        board[i][j] = 0; 
                     }
                 }
             }
-            playerX = !playerX;
+        }
+        
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (board[i][j] == 0) { 
+                    board[i][j] = 1; 
+                    if (checkWin(1)) { 
+                        board[i][j] = 2; 
+                        playerX = true; 
+                        return;
+                    } else {
+                        board[i][j] = 0; 
+                    }
+                }
+            }
+        }
+   
+        int x, y;
+        do {
+            x = rand() % size;
+            y = rand() % size;
+        } while (board[x][y] != 0); 
+
+        board[x][y] = 2; 
+        playerX = true;  
+    }
+}
+
+    int minimax (std::vector<std::vector<int>>& board, int depth, bool maximizing){
+        if (checkWin(2)) return 10 - depth;
+        if (checkWin(1)) return depth - 10;
+        if (isDraw()) return 0;
+        //maximizing your score (picking what runs as the best reward move)
+        if (maximizing) {
+            int best = -1000;
+            for (int i = 0; i < size; ++i) {
+                for (int j = 0; j < size; ++j) {
+                    if (board[i][j] == 0) {
+                        board[i][j] = 2;
+                        best = std::max(best, minimax(board, depth + 1, false));
+                        board[i][j] = 0;
+                    }
+                }
+            }
+            return best;
+        }
+
+        //minimizes opponent score (so ai can assume the player picked the best possible move)
+        else {
+            int best = 1000;
+            for (int i = 0; i < size; ++i) {
+                for (int j = 0; j < size; ++j) {
+                    if (board[i][j] == 0) {
+                        board[i][j] = 1;
+                        best = std::min(best, minimax(board, depth + 1, true));
+                        board[i][j] = 0;
+                    }
+                }
+            }
+            return best;
         }
     }
 
-    void mediumAI() {
-        if(!playerX && AI && !gameOver) {
-            for(int i=0; i<size; i++) {
-                int x = rand() % size;
-                int y = rand() % size;
-                while(board[x][y] != 0) {
-                    x = rand() % size;
-                    y = rand() % size;
+    void hardAI(){
+        if(!playerX && !gameOver){
+            int highestValue = -1000;
+            int bestRow = -1;
+            int bestColumn = -1;
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (board[i][j] == 0) {  
+                        board[i][j] = 2;
+                        int moveVal = minimax(board, 0, false);  
+                        board[i][j] = 0; 
+                        if (moveVal > highestValue) {
+                            bestRow = i;
+                            bestColumn = j;
+                            highestValue = moveVal;
+                        }
+                    }
                 }
-                board[x][y] = !playerX;
-                break;
+            }   
+            board[bestRow][bestColumn] = 2;  
+            playerX = true;  
+            drawingBoard();
+        
+            if (checkWin(2)) {  
+                showEnd = true;
+                return;
             }
-            playerX = !playerX;
+            if (isDraw()) {  
+                showEnd = true;
+                std::cout << "It's a draw" << std::endl;
+                return;
+            }
         }
     }
 
