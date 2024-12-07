@@ -33,8 +33,6 @@ public:
         medium = false;
         hard = false;
         game = false;
-        mouseX = 0.0f;
-        mouseY = 0.0f;
 
         //start screen buttons
         titleButton = Button(0.0f, 0.60f, 1.00f, 0.2f, "Tic-Tac-Toe", false, false);
@@ -139,11 +137,6 @@ public:
             } 
             // glutPostRedisplay();
         }
-    }
-
-    void mouseMotion(int x, int y) {
-        mouseX = (2.0f * (x / float(glutGet(GLUT_WINDOW_WIDTH)))) - 1.0f;
-        mouseY = 1.0f - (2.0f * (y / float(glutGet(GLUT_WINDOW_HEIGHT))));
     }
 
     void draw() {
