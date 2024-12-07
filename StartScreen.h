@@ -24,7 +24,7 @@ private:
     float mouseY;
 
     bool easy, medium, hard;
-    int size;
+    bool three, four, five;
     bool game;
 
 public:
@@ -33,7 +33,6 @@ public:
         medium = false;
         hard = false;
         game = false;
-        size=3;
         mouseX = 0.0f;
         mouseY = 0.0f;
 
@@ -77,25 +76,16 @@ public:
     bool isMediumSelected() const { return medium; }
     bool isHardSelected() const { return hard; }
 
-    int threeSelected() const { return 3; }
-    int fourSelected() const { return 4; }
-    int fiveSelected() const { return 5; }
+    bool threeSelected() const { return three; }
+    bool fourSelected() const { return four; }
+    bool fiveSelected() const { return five; }
 
     bool startGame() const {
         return game;
     }
 
-    int resizeBoard(int size) {
-        if(size > 0) {
-            this->size = size;
-            std::cout<<"Board size set to: "<<size<<std::endl;
-        }
-        return size;
-    }
-
     void reset() {
         game = false;
-        size = 3;
         unsetOpp();
     }
 
@@ -108,15 +98,15 @@ public:
             if(threeButton.isClicked(normX, normY)) {
                 unPressSize();
                 threeButton.setPressed(true);
-                size = 3;
+                three = true;
             } else if(fourButton.isClicked(normX, normY)) {
                 unPressSize();
                 fourButton.setPressed(true);
-                size = 4;
+                four = true;
             } else if(fiveButton.isClicked(normX, normY)) {
                 unPressSize();
                 fiveButton.setPressed(true);
-                size = 5;
+                five = true;
             }
 
             if(easyAiButton.isClicked(normX, normY)){
