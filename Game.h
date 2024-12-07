@@ -31,16 +31,15 @@ private:
     Button reset;
     int size;
     std::vector<std::vector<int>> board;
-    bool showStart, showEnd, showGame, ignoreClick;
+    bool showEnd;
     bool easy, medium, hard;
 
 public:
     Game(){
         playerX = true;
         size=3;
-        showStart = true;
         showEnd = false;
-        showGame = false;
+        gameOver = false;
         board.resize(size, std::vector<int>(size,0));
 
         //game screen buttons
@@ -130,6 +129,9 @@ public:
 
 
     void handleMouseClick(int button, int state, float x, float y) {
+        if(showEnd) {
+            return;
+        }
         //converts mouse coords to normal coords
         float normX = (2.0f * (x / glutGet(GLUT_WINDOW_WIDTH))) - 1.0f;
         float normY = 1.0f - (2.0f * (y / glutGet(GLUT_WINDOW_HEIGHT)));
@@ -150,10 +152,12 @@ public:
 
                     if(checkWin(playerX ? 2 : 1)) {
                         showEnd = true;
+                        gameOver = true;
                         return;
                     }
                     if(isDraw()) {
                         showEnd = true;
+                        gameOver = true;
                         std::cout<<"It's a draw!"<<std::endl;
                         return;
                     }
@@ -163,7 +167,7 @@ public:
                             easyAI();
                             std::cout<<"Changing to easy AI"<<std::endl;
                         } else if(medium){
-                            // mediumAI();
+                            mediumAI();
                             std::cout<<"Changing to medium AI"<<std::endl;
                         } else if (hard){
                             hardAI();
@@ -173,10 +177,12 @@ public:
                         drawingBoard();
                         if(checkWin(playerX ? 2 : 1)) {
                             showEnd = true;
+                            gameOver = true;
                             return;
                         }
                         if(isDraw()) {
                             showEnd = true;
+                            gameOver = true;
                             std::cout << "It's a draw" << std::endl;
                             return;
                         }
@@ -267,6 +273,7 @@ public:
 
     void resetGame() {
         playerX = true;
+        showEnd = false;
         gameOver = false;
         board.clear();
         board.resize(size, std::vector<int>(size, 0));
@@ -288,47 +295,47 @@ public:
 }
 
 
-//  void mediumAI() {
-//     if (!playerX && mediumAIsetting && !gameOver) { 
-//         for (int i = 0; i < size; i++) {
-//             for (int j = 0; j < size; j++) {
-//                 if (board[i][j] == 0) { 
-//                     board[i][j] = 2; 
-//                     if (checkWin(2)) { 
-//                         playerX = true; 
-//                         return;
-//                     } else {
-//                         board[i][j] = 0; 
-//                     }
-//                 }
-//             }
-//         }
+ void mediumAI() {
+    if (!playerX && !gameOver) { 
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (board[i][j] == 0) { 
+                    board[i][j] = 2; 
+                    if (checkWin(2)) { 
+                        playerX = true; 
+                        return;
+                    } else {
+                        board[i][j] = 0; 
+                    }
+                }
+            }
+        }
         
-//         for (int i = 0; i < size; i++) {
-//             for (int j = 0; j < size; j++) {
-//                 if (board[i][j] == 0) { 
-//                     board[i][j] = 1; 
-//                     if (checkWin(1)) { 
-//                         board[i][j] = 2; 
-//                         playerX = true; 
-//                         return;
-//                     } else {
-//                         board[i][j] = 0; 
-//                     }
-//                 }
-//             }
-//         }
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (board[i][j] == 0) { 
+                    board[i][j] = 1; 
+                    if (checkWin(1)) { 
+                        board[i][j] = 2; 
+                        playerX = true; 
+                        return;
+                    } else {
+                        board[i][j] = 0; 
+                    }
+                }
+            }
+        }
    
-//         int x, y;
-//         do {
-//             x = rand() % size;
-//             y = rand() % size;
-//         } while (board[x][y] != 0); 
+        int x, y;
+        do {
+            x = rand() % size;
+            y = rand() % size;
+        } while (board[x][y] != 0); 
 
-//         board[x][y] = 2; 
-//         playerX = true;  
-//     }
-// }
+        board[x][y] = 2; 
+        playerX = true;  
+    }
+}
 
     int minimax (std::vector<std::vector<int>>& board, int depth, bool maximizing){
         if (checkWin(2)) return 10 - depth;
