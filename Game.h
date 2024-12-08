@@ -7,6 +7,8 @@
 #include <GL/freeglut_std.h>
 #include "Button.h"
 #include <vector>
+#include "Graph.h"
+#include "LinkedList.h"
 
 struct Vec{
     int x;
@@ -20,7 +22,6 @@ struct Vec{
         this->x = x;
         this->y = y;
     }
-
 };
 
 struct GameStateNode {
@@ -30,12 +31,18 @@ struct GameStateNode {
 
     GameStateNode(std::vector<std::vector<int>> boardState)
         : board(boardState), score(0) {}
+    
+    ~GameStateNode() {
+        for(auto child : children) {
+            delete child;
+        }
+    }
 };
 
 class Game{
 
 private:
-    bool playerX, gameOver;
+    bool playerX, gameOver, homeScreen;
     Button home;
     Button reset;
     int size;
@@ -48,6 +55,7 @@ public:
         playerX = true;
         size=3;
         gameOver = false;
+        homeScreen = false;
         board.resize(size, std::vector<int>(size,0));
 
         //game screen buttons
@@ -135,6 +143,8 @@ public:
         none = set;
     }
 
+    bool homeSelected() const { return homeScreen; }
+
     void draw() {
         drawingBoard();
         home.draw();
@@ -149,15 +159,12 @@ public:
         float normY = 1.0f - (2.0f * (y / glutGet(GLUT_WINDOW_HEIGHT)));
         
         if(button == 0 && state == 0) {
-
             if(reset.isClicked(normX, normY)) {
                 resetGame();
                 return;
             }
             if(home.isClicked(normX, normY)) {
-                gameOver = true;
-                winner = -1;
-                resetGame();
+                homeScreen = true;
                 return;
             }
             //determine square clicked
@@ -275,6 +282,7 @@ public:
         return false;
     }
 
+
     void setWinner(int winner) {
         this->winner = winner;
     }
@@ -311,6 +319,7 @@ public:
     void resetGame() {
         playerX = true;
         gameOver = false;
+        homeScreen = false;
         winner = 0;
         board.clear();
         board.resize(size, std::vector<int>(size, 0));
@@ -382,134 +391,128 @@ public:
         }
     }
 
-    int evaluateBoard(const std::vector<std::vector<int>>& board, bool isPlayerX) {
-        for (int i = 0; i < 3; i++) {
-            if (board[i][0] == board[i][1] && board[i][1] == board[i][size -1]) {
-                if (board[i][0] == (isPlayerX ? 1 : 2)) return 10;  
-                else if (board[i][0] == (isPlayerX ? 2 : 1)) return -10;  
-            }
-            if (board[0][i] == board[1][i] && board[1][i] == board[2][i]) {
-                if (board[0][i] == (isPlayerX ? 1 : 2)) return 10;  
-                else if (board[0][i] == (isPlayerX ? 2 : 1)) return -10;  
-            }
-        }
-
-        if (board[0][0] == board[1][1] && board[1][1] == board[size-1][size -1]) {
-            if (board[0][0] == (isPlayerX ? 1 : 2)) return 10;  
-            else if (board[0][0] == (isPlayerX ? 2 : 1)) return -10;  
-        }
-        if (board[0][size -1] == board[1][1] && board[1][1] == board[size -1][0]) {
-            if (board[0][size -1] == (isPlayerX ? 1 : 2)) return 10;  
-            else if (board[0][size -1] == (isPlayerX ? 2 : 1)) return -10;  
-        }
-
-        return 0;  
-    }
-
-    void generateGameTree(GameStateNode* node, int depth, bool maximizingPlayer) {
-        if (depth == 0 || gameOver) {
-            return;  
-        }
-
-    
+    bool checkWin2(int player){
+        // Check rows  for a win
         for (int i = 0; i < size; ++i) {
-            for (int j = 0; j < size; ++j) {
-                if (node->board[i][j] == 0) {
-            
-                    std::vector<std::vector<int>> newBoard = node->board;
-                    newBoard[i][j] = maximizingPlayer ? 2 : 1;  
-
-                
-                    GameStateNode* child = new GameStateNode(newBoard);
-                    node->children.push_back(child);
-
-                
-                    generateGameTree(child, depth - 1, !maximizingPlayer);
+            bool rowWin = true;
+            for(int j=0; j<size; j++) {
+                if(board[i][j] != player) {
+                    rowWin = false;
+                    break;
                 }
             }
+            if(rowWin) {
+                winner = player;
+                std::cout << "Player " << player << " wins!" << std::endl;
+                return true;
+            }
         }
+
+        //check columns for a win
+        for (int i = 0; i < size; ++i) {
+            bool colWin = true;
+            for(int j=0; j<size; j++) {
+                if(board[j][i] != player) {
+                    colWin = false;
+                    break;
+                }
+            }
+            if(colWin) {
+                winner = player;
+                std::cout << "Player " << player << " wins!" << std::endl;
+                return true;
+            }
+        }
+
+        //check diagonal win left to right 
+        bool d1win = true;
+        bool d2win = true;
+        for(int i=0; i<size; i++) {
+            if(board[i][i] != player) {
+                d1win = false;
+            }
+            if(board[i][size - i - 1] != player) {
+                d2win = false;
+            } 
+        }
+
+        if(d1win || d2win) {
+            winner = player;
+            std::cout << "Player " << player << " wins!" << std::endl;
+            return true;
+        }
+
+        std::cout << "No winner: "<<player<< std::endl;
+        //no winner
+        return false;
     }
 
-    int minimax(GameStateNode* node, int depth, bool playerTurn) {
-        // Base case: check for terminal states (game over or depth limit reached)
-        if (depth == 0 || gameOver) {
-            return evaluateBoard(node->board, playerTurn);
-        }
-
-        if (playerTurn) {
+    int minimax (std::vector<std::vector<int>>& board, int depth, bool maximizing){
+        if (checkWin(2)) return 10 - depth;
+        if (checkWin(1)) return depth - 10;
+        if (isDraw()) return 0;
+        //maximizing your score (picking what runs as the best reward move)
+        if (maximizing) {
             int best = -1000;
-            for (auto child : node->children) {
-                best = std::max(best, minimax(child, depth - 1, false));
-            }
-            return best;
-        } else {
-            int best = 1000;
-            for (auto child : node->children) {
-                best = std::min(best, minimax(child, depth - 1, true));
-            }
-            return best;
-        }
-    }
-
-    int minimaxAlphaBeta(GameStateNode* node, int depth, bool playerTurn, int alpha, int beta) {
-        // Base case
-        if (depth == 0 || gameOver) {
-            return evaluateBoard(node->board, playerTurn);
-        }
-
-        if (playerTurn) {
-            int best = -1000;
-            for (auto child : node->children) {
-                best = std::max(best, minimaxAlphaBeta(child, depth - 1, false, alpha, beta));
-                alpha = std::max(alpha, best);
-                if (beta <= alpha) {
-                    break;  // Beta cut-off
-                }
-            }
-            return best;
-        } else {
-            int best = 1000;
-            for (auto child : node->children) {
-                best = std::min(best, minimaxAlphaBeta(child, depth - 1, true, alpha, beta));
-                beta = std::min(beta, best);
-                if (beta <= alpha) {
-                    break;  // Alpha cut-off
-                }
-            }
-            return best;
-        }
-    }
-
-    void hardAI() {
-        int bestVal = -1000;
-        int bestRow = -1;
-        int bestColumn = -1;
-    
-        GameStateNode* root = new GameStateNode(board);
-        
-        generateGameTree(root, 3, true);  
-  
-        for (auto child : root->children) {
-            int moveVal = minimaxAlphaBeta(child, 3, false, -1000, 1000);  
-            if (moveVal > bestVal) {
-                bestVal = moveVal;
-                for (int i = 0; i < size; i++){
-                    for(int j = 0; j< size; j++){
-                        if(child->board[i][j] != board[i][j]){
-                            bestRow = i;
-                            bestColumn = j;
-                            break;
-                        }
+            for (int i = 0; i < size; ++i) {
+                for (int j = 0; j < size; ++j) {
+                    if (board[i][j] == 0) {
+                        board[i][j] = 2;
+                        best = std::max(best, minimax(board, depth + 1, false));
+                        board[i][j] = 0;
                     }
                 }
             }
+            return best;
         }
 
-        if(bestRow != -1 && bestColumn != -1){
-            board[bestRow][bestColumn] = 2;
-            playerX = !playerX;
+        //minimizes opponent score (so ai can assume the player picked the best possible move)
+        else {
+            int best = 1000;
+            for (int i = 0; i < size; ++i) {
+                for (int j = 0; j < size; ++j) {
+                    if (board[i][j] == 0) {
+                        board[i][j] = 1;
+                        best = std::min(best, minimax(board, depth + 1, true));
+                        board[i][j] = 0;
+                    }
+                }
+            }
+            return best;
         }
-        
+    }
+
+    void hardAI(){
+        if(!playerX && !gameOver){
+            int highestValue = -1000;
+            int bestRow = -1;
+            int bestColumn = -1;
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (board[i][j] == 0) {  
+                        board[i][j] = 2;
+                        int moveVal = minimax(board, 0, false);  
+                        board[i][j] = 0; 
+                        if (moveVal > highestValue) {
+                            bestRow = i;
+                            bestColumn = j;
+                            highestValue = moveVal;
+                        }
+                    }
+                }
+            }   
+            board[bestRow][bestColumn] = 2;  
+            playerX = true;  
+            drawingBoard();
+
+            if (checkWin(2)) {  
+                return;
+            }
+            if (isDraw()) {  
+                std::cout << "It's a draw" << std::endl;
+                return;
+            }
+        }
     }
  
     ~Game() {}
