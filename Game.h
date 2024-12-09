@@ -467,31 +467,17 @@ bool isBoardFull(const std::vector<std::vector<int>>& board) {
     return true; // All cells are filled, the board is full
 }
 
-// Function to handle player input
-std::pair<int, int> getPlayerMove(const std::vector<std::vector<int>>& board) {
-    int x, y;
-    while (true) {
-        std::cout << "Enter your move (row and column): ";
-        std::cin >> x >> y; // Prompt the player to enter row and column
-       
-        if (x >= 0 && x < size && y >= 0 && y < size && board[x][y] == 0) {
-            return {x, y}; // Return the valid move as a pair of coordinates
-        } else {
-            std::cout << "Invalid move. Try again." << std::endl; // Inform the player of invalid input
-        }
-    }
-}
 // Minimax function
 int minimax(GameStateNode* node, int depth, bool playerTurn) {
     // Base case: check for terminal states (game over or depth limit reached)
-    if (depth == 0 || node->children.empty() || gameOver) {
+    if (depth == 0 || gameOver) {
         return evaluateBoard(node->board, playerTurn); // Evaluate the board and return the score
     }
    
     if (playerTurn) {
         int best = -1000; // Initialize the best score for maximizing player
         for (GameStateNode* child : node->children) {
-            int eval = minimax(child, depth -1, false);
+            int eval = minimax(child, depth -1, true); 
             best = std::max(best, eval); // Recursively call minimax for each child
         }
         node->score = best;
@@ -508,36 +494,36 @@ int minimax(GameStateNode* node, int depth, bool playerTurn) {
 }
 
 // Minimax with alpha-beta pruning
-int minimaxAlphaBeta(GameStateNode* node, int depth, bool playerTurn, int alpha, int beta) {
-    // Base case: check for terminal states (game over or depth limit reached)
-    if (depth == 0 || gameOver) {
-        return evaluateBoard(node->board, playerTurn); // Evaluate the board and return the score
-    }
+// int minimaxAlphaBeta(GameStateNode* node, int depth, bool playerTurn, int alpha, int beta) {
+//     // Base case: check for terminal states (game over or depth limit reached)
+//     if (depth == 0 || gameOver) {
+//         return evaluateBoard(node->board, playerTurn); // Evaluate the board and return the score
+//     }
    
-    if (playerTurn) {
-        int best = -1000; // Initialize the best score for maximizing player
-        for (auto child : node->children) {
-            best = std::max(best, minimaxAlphaBeta(child, depth - 1, false, alpha, beta)); // Recursively call minimax with alpha-beta pruning
-            alpha = std::max(alpha, best); // Update alpha
+//     if (playerTurn) {
+//         int best = -1000; // Initialize the best score for maximizing player
+//         for (auto child : node->children) {
+//             best = std::max(best, minimaxAlphaBeta(child, depth - 1, false, alpha, beta)); // Recursively call minimax with alpha-beta pruning
+//             alpha = std::max(alpha, best); // Update alpha
            
-            if (beta <= alpha) {
-                break; // Beta cut-off: stop exploring further if beta is less than or equal to alpha
-            }
-        }
-        return best; // Return the best score found
-    } else {
-        int best = 1000; // Initialize the best score for minimizing player
-        for (auto child : node->children) {
-            best = std::min(best, minimaxAlphaBeta(child, depth - 1, true, alpha, beta)); // Recursively call minimax with alpha-beta pruning
-            beta = std::min(beta, best); // Update beta
+//             if (beta <= alpha) {
+//                 break; // Beta cut-off: stop exploring further if beta is less than or equal to alpha
+//             }
+//         }
+//         return best; // Return the best score found
+//     } else {
+//         int best = 1000; // Initialize the best score for minimizing player
+//         for (auto child : node->children) {
+//             best = std::min(best, minimaxAlphaBeta(child, depth - 1, true, alpha, beta)); // Recursively call minimax with alpha-beta pruning
+//             beta = std::min(beta, best); // Update beta
            
-            if (beta <= alpha) {
-                break; // Alpha cut-off: stop exploring further if beta is less than or equal to alpha
-            }
-        }
-        return best; // Return the best score found
-    }
-}
+//             if (beta <= alpha) {
+//                 break; // Alpha cut-off: stop exploring further if beta is less than or equal to alpha
+//             }
+//         }
+//         return best; // Return the best score found
+//     }
+// }
 
 bool checkWinTwo(const std::vector<std::vector<int>>& board, int player) {
   
@@ -568,7 +554,7 @@ void hardAI() {
         std::pair<int, int> bestMove; // Variable to store the best move
        
         for(auto child : rootNode->children) {
-            int score = minimaxAlphaBeta(child, 2, false, -1000, 1000); // Evaluate each child using alpha-beta pruning
+            int score = minimax(child, 2, false); 
             if(score > bestScore) { // If a better score is found
                 bestScore = score; // Update the best score
                
