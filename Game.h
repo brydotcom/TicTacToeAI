@@ -537,42 +537,62 @@ public:
         if (depth == 0 || gameOver || isBoardFull(node->board)) {
             return evaluateBoard(node->board, playerTurn); // Evaluate the board and return the score
         }
-    
-        if (playerTurn) {
-            int maximumReward = INT_MIN;
-            for (int i=0; i< size; i++) {
+
+        int reward = playerTurn ? INT_MIN : INT_MAX;
+        for (int i=0; i< size; i++) {
                 for(int j=0; j<size; j++) {
-                if(node->board[i][j] == 0) {
-                    node->board[i][j] = 2;
-                    int current = maxReward(node, depth - 1, false, alpha, beta);
-                    node->board[i][j] = 0;
-                    maximumReward = max(maximumReward, current);
-                    alpha = max(alpha, maximumReward);
-                        if(beta <= alpha) {
-                            break;
-                            }
-                    }
-                }
-            }
-            return maximumReward;
-        } else {
-            int minimumReward = INT_MAX;
-            for (int i=0; i< size; i++) {
-                for(int j=0; j<size; j++) {
-                    if(node->board[i][j] == 0) {
-                        node->board[i][j] = 1;
-                        int current = maxReward(node, depth - 1, false, alpha, beta);
-                        node->board[i][j] = 0;
-                        minimumReward = min(minimumReward, current);
-                        alpha = min(alpha, minimumReward);
+                    if(node->board[i][j]) {
+                        int current = maxReward(node, depth - 1, playerTurn, alpha, beta);
+                        if(node->board[i][j] == playerTurn) {
+                            reward = max(reward, current);
+                            alpha = max(alpha, reward);
+                        } else {
+                            reward = min(reward, current);
+                            alpha = min(alpha, reward);
+                        }
                         if(beta <= alpha) {
                             break;
                         }
                     }
                 }
-            }
-        return minimumReward;
-        }             
+                }
+                return reward;
+    
+        // if (playerTurn) {
+        //     int maximumReward = INT_MIN;
+        //     for (int i=0; i< size; i++) {
+        //         for(int j=0; j<size; j++) {
+        //         if(node->board[i][j] == 0) {
+        //             node->board[i][j] = 2;
+        //             int current = maxReward(node, depth - 1, false, alpha, beta);
+        //             node->board[i][j] = 0;
+        //             maximumReward = max(maximumReward, current);
+        //             alpha = max(alpha, maximumReward);
+        //                 if(beta <= alpha) {
+        //                     break;
+        //                     }
+        //             }
+        //         }
+        //     }
+        //     return maximumReward;
+        // } else {
+        //     int minimumReward = INT_MAX;
+        //     for (int i=0; i< size; i++) {
+        //         for(int j=0; j<size; j++) {
+        //             if(node->board[i][j] == 0) {
+        //                 node->board[i][j] = 1;
+        //                 int current = maxReward(node, depth - 1, false, alpha, beta);
+        //                 node->board[i][j] = 0;
+        //                 minimumReward = min(minimumReward, current);
+        //                 alpha = min(alpha, minimumReward);
+        //                 if(beta <= alpha) {
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // return minimumReward;
+        // }             
     }
 
     // Minimax function
@@ -612,7 +632,7 @@ public:
         if (!playerX && !gameOver) { // Only proceed if it's not Player X's turn and the game is not over
             GameStateNode* root = new GameStateNode(board); // Create a root node with the current board state
             int depth = dynamicDepth(size);
-            generateGameTree(root, depth, false); // Generate the game tree up to depth 3
+            generateGameTree(root, depth, true); // Generate the game tree up to depth 3
         
             int bestScore = INT_MIN; // Initialize the best score for the AI
             GameStateNode* bestMove = nullptr; // Variable to store the best move
