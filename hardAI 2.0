@@ -165,3 +165,13 @@ bool checkWin(const std::vector<std::vector<int>>& board, int player) {
    
     return false;
 }
+
+// Function to check if the board is full
+bool isBoardFull(const std::vector<std::vector<int>>& board) {
+    for (const auto& row : board) {
+        for (int cell : row) {
+            if (cell == 0) return false;
+        }
+    }
+    return true;
+}
