@@ -10,6 +10,7 @@
 #include "Graph.h"
 #include "Texture.h"
 #include "LinkedList.h"
+#include <climits>
 #include <utility>
 
 struct Vec{
@@ -31,6 +32,7 @@ struct GameStateNode {
     std::vector<std::vector<int>> board; 
     int score;  
     std::vector<GameStateNode*> children;  
+    
     GameStateNode(std::vector<std::vector<int>> boardState)
         : board(boardState), score(0) {}
 };
@@ -47,6 +49,7 @@ private:
 
 public:
     int winner = 0; // Set to no winner
+
     Game(){
         playerX = true;
         size=3;
@@ -386,210 +389,250 @@ public:
         }
     }
 
+    inline int max(int a, int b) {
+        return (a>b) ? a : b;
+    }
+
+    inline int min(int a, int b) {
+        return (a<b) ? a : b;
+    }
+
+    inline int dynamicDepth(int size) {
+        if(size <=3) {
+            return 4;
+        }
+        return 2;
+    }
+
     // Function to evaluate the board state
     int evaluateBoard(const std::vector<std::vector<int>>& board, bool isPlayerX) {
-     // Determine the size of the board (should be 3 for Tic-Tac-Toe)
-   
-        playerX = !playerX;
-            // Check rows for a win
-            for (int i = 0; i < size; i++) {
-                if (board[i][0] == board[i][1] && board[i][1] == board[i][size - 1]) { // Check if all cells in the row are the same and not empty
-                    if (board[i][0] == (isPlayerX ? 1 : 2)) return 10; // If it's a win for the player, return +10
-                    else if (board[i][0] == (isPlayerX ? 2 : 1)) return -10; // If it's a win for the opponent, return -10
-                }
-       
-        // Check columns for a win
-        if (board[0][i] == board[1][i] && board[1][i] == board[size - 1][i]) { // Check if all cells in the column are the same and not empty
-            if (board[0][i] == (isPlayerX ? 1 : 2)) return 10; // If it's a win for the player, return +10
-            else if (board[0][i] == (isPlayerX ? 2 : 1)) return -10; // If it's a win for the opponent, return -10
-        }
-    }
-   
-    // Check diagonals for a win
-    if (board[0][0] == board[1][1] && board[1][1] == board[size - 1][size - 1]) { // Check main diagonal
-        if (board[0][0] == (isPlayerX ? 1 : 2)) return 10; // If it's a win for the player, return +10
-        else if (board[0][0] == (isPlayerX ? 2 : 1)) return -10; // If it's a win for the opponent, return -10
-    }
-   
-    if (board[size - 1][0] == board[1][1] && board[1][1] == board[0][size - 1]) { // Check anti-diagonal
-        if (board[size - 1][0] == (isPlayerX ? 1 : 2)) return 10; // If it's a win for the player, return +10
-        else if (board[size - 1][0] == (isPlayerX ? 2 : 1)) return -10; // If it's a win for the opponent, return -10
-    }
-   
-    return 0; // If no winner is found, return a neutral score of 0
-}
+        int score = 0;
+        // Check rows and columns for a win
+        for (int i = 0; i < size; i++) {
+            int playerCount = 0;
+            int oppCount = 0;
+            for(int j=0; j < size; j++) {
+                if (board[i][j] == isPlayerX) {
+                    playerCount++;
+                } 
+                else if (board[i][j] == isPlayerX) {
+                    oppCount++;
+                } 
+            }
+            if(playerCount > 0 && oppCount == 0) {
+                score += playerCount;
+            }
+            if(oppCount > 0 && playerCount == 0) {
+                score -= oppCount;
+            }
 
-// Function to generate the game tree
-void generateGameTree(GameStateNode* node, int depth, bool maximizingPlayer) {
-    if (depth == 0 || gameOver) { // Base case: stop if depth is 0 or game is over
-        return;
+            playerCount = 0;
+            oppCount = 0;
+            for(int j=0; j < size; j++) {
+                if (board[j][i] == isPlayerX) {
+                    playerCount++;
+                } 
+                else if (board[j][i] == isPlayerX) {
+                    oppCount++;
+                } 
+            }
+            if(playerCount > 0 && oppCount == 0) {
+                score += playerCount;
+            }
+            if(oppCount > 0 && playerCount == 0) {
+                score -= oppCount;
+            }
+        }
+
+        int player1Diagonal = 0, opp1Diagonal = 0;
+        int player2Diagonal = 0, opp2Diagonal = 0;
+    
+        // Check diagonals for a win
+        for(int i=0; i< size; i++) {
+            if(board[i][i] == isPlayerX) {
+                player1Diagonal++;
+            }
+            if(board[i][i] == !isPlayerX) {
+                opp1Diagonal++;
+            }
+            if(board[i][size - 1 - i] == isPlayerX) {
+                player2Diagonal++;
+            }
+            if(board[i][size - 1 - i] == !isPlayerX) {
+                opp2Diagonal++;
+            }
+        }
+        if(player1Diagonal > 0 && opp1Diagonal == 0) {
+            score+=player1Diagonal;
+        }
+        if(opp1Diagonal > 0 && player1Diagonal == 0) {
+            score+=opp1Diagonal;
+        }
+        if(player2Diagonal > 0 && opp2Diagonal == 0) {
+            score+=player2Diagonal;
+        }
+        if(opp2Diagonal > 0 && player2Diagonal == 0) {
+            score+=opp2Diagonal;
+        }
+
+        if(size % 2 == 1) {
+            int mid = size / 2;
+            if(board[mid][mid] == isPlayerX) {
+                score +=3;
+            }
+        }
+    
+        return score;
     }
-   
-    // Determine the size of the board
-   
-    for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-            if (node->board[i][j] == 0) { // If the cell is empty
-                std::vector<std::vector<int>> newBoard = node->board;
-                newBoard[i][j] = maximizingPlayer ? 2 : 1; // Assigns the player's number to the board
-               
-                GameStateNode* child = new GameStateNode(newBoard); // Create a new game state node
-                node->children.push_back(child); // Add the child node to the current node's children
-                generateGameTree(child, depth - 1, !maximizingPlayer); // Recursively generate the tree for the child node
+
+    // Function to generate the game tree
+    void generateGameTree(GameStateNode* node, int depth, bool maximizingPlayer) {
+        if (depth == 0 || gameOver) { // Base case: stop if depth is 0 or game is over
+            return;
+        }
+    
+        // Determine the size of the board
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < size; ++j) {
+                if (node->board[i][j] == 0) { // If the cell is empty
+                    std::vector<std::vector<int>> newBoard = node->board;
+                    newBoard[i][j] = maximizingPlayer ? 2 : 1; // Assigns the player's number to the board
+                
+                    GameStateNode* child = new GameStateNode(newBoard); // Create a new game state node
+                    node->children.push_back(child); // Add the child node to the current node's children
+                    generateGameTree(child, depth - 1, !maximizingPlayer); // Recursively generate the tree for the child node
+                }
             }
         }
     }
-}
 
-bool checkWin2(const std::vector<std::vector<int>>& board, int player) {
-    // Determine the size of the board
-   
-    // Check rows for a win
-    for (int i = 0; i < size; i++) {
-        if (board[i][0] == player && board[i][1] == player && board[i][size -1] == player) return true; // If all cells in the row are the same and match the player's number
-        if (board[0][i] == player && board[1][i] == player && board[size -1][i] == player) return true; // If all cells in the column are the same and match the player's number
-    }
-   
-    // Check diagonals for a win
-    if (board[0][0] == player && board[1][1] == player && board[size-1][size -1] == player) return true; // If all cells in the main diagonal are the same and match the player's number
-    if (board[0][size -1] == player && board[1][1] == player && board[size -1][0] == player) return true; // If all cells in the anti-diagonal are the same and match the player's number
-   
-    return false; // No win found
-}
-
-// Function to check if the board is full
-bool isBoardFull(const std::vector<std::vector<int>>& board) {
-    for (const auto& row : board) {
-        for (int cell : row) {
-            if (cell == 0) return false; // If there's an empty cell, the board is not full
+    bool checkWin2(const std::vector<std::vector<int>>& board, int player) {
+        // Determine the size of the board
+    
+        // Check rows for a win
+        for (int i = 0; i < size; i++) {
+            if (board[i][0] == player && board[i][1] == player && board[i][size -1] == player) return true; // If all cells in the row are the same and match the player's number
+            if (board[0][i] == player && board[1][i] == player && board[size -1][i] == player) return true; // If all cells in the column are the same and match the player's number
         }
+    
+        // Check diagonals for a win
+        if (board[0][0] == player && board[1][1] == player && board[size-1][size -1] == player) return true; // If all cells in the main diagonal are the same and match the player's number
+        if (board[0][size -1] == player && board[1][1] == player && board[size -1][0] == player) return true; // If all cells in the anti-diagonal are the same and match the player's number
+    
+        return false; // No win found
     }
-    return true; // All cells are filled, the board is full
-}
 
-// Minimax function
-int minimax(GameStateNode* node, int depth, bool playerTurn) {
-    // Base case: check for terminal states (game over or depth limit reached)
-    if (depth == 0 || gameOver) {
-        return evaluateBoard(node->board, playerTurn); // Evaluate the board and return the score
-    }
-   
-    if (playerTurn) {
-        int best = -1000; // Initialize the best score for maximizing player
-        for (GameStateNode* child : node->children) {
-            int eval = minimax(child, depth -1, true); 
-            best = std::max(best, eval); // Recursively call minimax for each child
+    // Function to check if the board is full
+    bool isBoardFull(const std::vector<std::vector<int>>& board) {
+        for (const auto& row : board) {
+            for (int cell : row) {
+                if (cell == 0) return false; // If there's an empty cell, the board is not full
+            }
         }
-        node->score = best;
-        return best; // Return the best score found
-    } else {
-        int worst = 1000; // Initialize the best score for minimizing player
-        for (auto child : node->children) {
-            int eval = minimax(child, depth - 1, true);
-            worst = std::min(worst, eval); // Recursively call minimax for each child
+        return true; // All cells are filled, the board is full
+    }
+
+    int maxReward(GameStateNode* node, int depth, bool playerTurn, int alpha = INT_MIN, int beta = INT_MAX) {
+        // Base case: check for terminal states (game over or depth limit reached)
+        if (depth == 0 || gameOver || isBoardFull(node->board)) {
+            return evaluateBoard(node->board, playerTurn); // Evaluate the board and return the score
         }
-        node->score = worst;
-        return worst; // Return the best score found
-    }
-}
-
-// Minimax with alpha-beta pruning
-// int minimaxAlphaBeta(GameStateNode* node, int depth, bool playerTurn, int alpha, int beta) {
-//     // Base case: check for terminal states (game over or depth limit reached)
-//     if (depth == 0 || gameOver) {
-//         return evaluateBoard(node->board, playerTurn); // Evaluate the board and return the score
-//     }
-   
-//     if (playerTurn) {
-//         int best = -1000; // Initialize the best score for maximizing player
-//         for (auto child : node->children) {
-//             best = std::max(best, minimaxAlphaBeta(child, depth - 1, false, alpha, beta)); // Recursively call minimax with alpha-beta pruning
-//             alpha = std::max(alpha, best); // Update alpha
-           
-//             if (beta <= alpha) {
-//                 break; // Beta cut-off: stop exploring further if beta is less than or equal to alpha
-//             }
-//         }
-//         return best; // Return the best score found
-//     } else {
-//         int best = 1000; // Initialize the best score for minimizing player
-//         for (auto child : node->children) {
-//             best = std::min(best, minimaxAlphaBeta(child, depth - 1, true, alpha, beta)); // Recursively call minimax with alpha-beta pruning
-//             beta = std::min(beta, best); // Update beta
-           
-//             if (beta <= alpha) {
-//                 break; // Alpha cut-off: stop exploring further if beta is less than or equal to alpha
-//             }
-//         }
-//         return best; // Return the best score found
-//     }
-// }
-
-bool checkWinTwo(const std::vector<std::vector<int>>& board, int player) {
-  
-   // Determine the size of the board
-   
-    // Check rows for a win
-    for (int i = 0; i < size; ++i) {
-        if (board[i][0] == player && board[i][1] == player && board[i][size -1] == player) return true; // If all cells in the row are the same and match the player's number
-        if (board[0][i] == player && board[1][i] == player && board[size -1][i] == player) return true; // If all cells in the column are the same and match the player's number
-    }
-   
-    // Check diagonals for a win
-    if (board[0][0] == player && board[1][1] == player && board[size -1][size -1] == player) return true; // If all cells in the main diagonal are the same and match the player's number
-    if (board[0][size -1] == player && board[1][1] == player && board[size -1][0] == player) return true; // If all cells in the anti-diagonal are the same and match the player's number
-   
-    return false; // No win found
-}
-
-
- // Function for the AI move using minimax with alpha-beta pruning
-void hardAI() {
-    if (!playerX && !gameOver) { // Only proceed if it's not Player X's turn and the game is not over
-        GameStateNode* rootNode = new GameStateNode(board); // Create a root node with the current board state
-       
-        generateGameTree(rootNode, 3, true); // Generate the game tree up to depth 3
-       
-        int bestScore = -1000; // Initialize the best score for the AI
-        std::pair<int, int> bestMove; // Variable to store the best move
-       
-        for(auto child : rootNode->children) {
-            int score = minimax(child, 2, false); 
-            if(score > bestScore) { // If a better score is found
-                bestScore = score; // Update the best score
-               
-                // Find the position of the best move by comparing the child board with the current board
-                for(int i = 0; i < size; ++i) {
-                    for(int j = 0; j < size; ++j) {
-                        if(child->board[i][j] != board[i][j]) { // Identify the cell that differs
-                            bestMove = {i, j}; // Set the best move
+    
+        if (playerTurn) {
+            int maximumReward = INT_MIN;
+            for (int i=0; i< size; i++) {
+                for(int j=0; j<size; j++) {
+                if(node->board[i][j] == 0) {
+                    node->board[i][j] = 2;
+                    int current = maxReward(node, depth - 1, false, alpha, beta);
+                    node->board[i][j] = 0;
+                    maximumReward = max(maximumReward, current);
+                    alpha = max(alpha, maximumReward);
+                        if(beta <= alpha) {
+                            break;
+                            }
+                    }
+                }
+            }
+            return maximumReward;
+        } else {
+            int minimumReward = INT_MAX;
+            for (int i=0; i< size; i++) {
+                for(int j=0; j<size; j++) {
+                    if(node->board[i][j] == 0) {
+                        node->board[i][j] = 1;
+                        int current = maxReward(node, depth - 1, false, alpha, beta);
+                        node->board[i][j] = 0;
+                        minimumReward = min(minimumReward, current);
+                        alpha = min(alpha, minimumReward);
+                        if(beta <= alpha) {
                             break;
                         }
                     }
                 }
             }
-        }
-       
-        board[bestMove.first][bestMove.second] = 2; // AI makes its move by placing 'O' in the best position
-        if (checkWin2(board, 2)) { // Check if AI has won
-            setWinner(2); // Announce AI as the winner
-            gameOver = true; // Set the game over flag
-        } else if (isBoardFull(board)) { // Check if the board is full
-            std::cout << "It's a draw!" << std::endl; // Announce a draw
-            gameOver = true; // Set the game over flag
-        }
-        // Cleanup memory allocated for the game tree nodes
-        for(auto child : rootNode->children) {
-            delete child; // Delete each child node
-        }
-        delete rootNode; // Delete the root node
-
-         playerX = !playerX; 
-        
+        return minimumReward;
+        }             
     }
 
+    // Minimax function
+    int minimaxAlphaBeta(GameStateNode* node, int depth, bool playerTurn, int alpha, int beta) {
+        // Base case: check for terminal states (game over or depth limit reached)
+        if (depth == 0 || isBoardFull(node->board) || checkWin2(node->board, 1) || checkWin2(node->board, 2)) {
+            return evaluateBoard(node->board, playerTurn); // Evaluate the board and return the score
+        }
 
-}
+        if(playerTurn) {
+            int maximumReward = INT_MIN;
+            for (auto& child : node->children) {
+                int current = minimaxAlphaBeta(child, depth - 1, false, alpha, beta);
+                maximumReward = max(maximumReward, current);
+                alpha = max(alpha, maximumReward);
+                if(beta <= alpha) {
+                    break;
+                }
+            }
+            return maximumReward;
+        } else {
+            int minimumReward = INT_MAX;
+            for (auto& child : node->children) {
+                int current = minimaxAlphaBeta(child, depth - 1, false, alpha, beta);
+                minimumReward = min(minimumReward, current);
+                alpha = min(alpha, minimumReward);
+                if(beta <= alpha) {
+                    break;
+                }
+            }
+            return minimumReward;
+        }
+    }
+
+    // Function for the AI move using minimax with alpha-beta pruning
+    void hardAI() {
+        if (!playerX && !gameOver) { // Only proceed if it's not Player X's turn and the game is not over
+            GameStateNode* root = new GameStateNode(board); // Create a root node with the current board state
+            int depth = dynamicDepth(size);
+            generateGameTree(root, depth, false); // Generate the game tree up to depth 3
+        
+            int bestScore = INT_MIN; // Initialize the best score for the AI
+            GameStateNode* bestMove = nullptr; // Variable to store the best move
+        
+            for(auto child : root->children) {
+                int score = minimaxAlphaBeta(child, depth - 1, true, INT_MIN, INT_MAX); 
+                if(score > bestScore) { // If a better score is found
+                    bestScore = score; // Update the best score
+                    bestMove = child;
+                }
+            }
+                
+            if(bestMove) {
+                board = bestMove->board;
+            }
+        
+            playerX = true;
+            delete root;        
+        }
+    }
 
     ~Game() {}
 };
