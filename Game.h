@@ -43,8 +43,8 @@ class Game{
 
 private:
     bool playerX, gameOver, homeScreen;
-    Button home;
-    Button reset;
+    Texture* home;
+    Texture* reset;
     int size;
     std::vector<std::vector<int>> board;
     bool easy, medium, hard, none;
@@ -57,10 +57,8 @@ public:
         gameOver = false;
         homeScreen = false;
         board.resize(size, std::vector<int>(size,0));
-
-        //game screen buttons
-        home = Button(-0.9f, 0.95f, 0.2f, 0.15f, "Home", false, false);
-        reset = Button(0.9f, 0.95f, 0.2f, 0.15f, "Reset", false, false); 
+        home = new Texture(-1.0f, 1.0f, 0.15f, 0.15f, "./assets/homeSymbol.png");
+        reset = new Texture(0.85, 1.0, 0.15, 0.15,"./assets/arrow.png"); 
     }
 
     void drawingBoard() {
@@ -147,8 +145,8 @@ public:
 
     void draw() {
         drawingBoard();
-        home.draw();
-        reset.draw();
+        home->draw();
+        reset->draw();
     }
 
     void handleMouseClick(int button, int state, float x, float y) {
@@ -159,11 +157,11 @@ public:
         float normY = 1.0f - (2.0f * (y / glutGet(GLUT_WINDOW_HEIGHT)));
         
         if(button == 0 && state == 0) {
-            if(reset.isClicked(normX, normY)) {
+            if(reset->contains(normX, normY)) {
                 resetGame();
                 return;
             }
-            if(home.isClicked(normX, normY)) {
+            if(home->contains(normX, normY)) {
                 homeScreen = true;
                 return;
             }
