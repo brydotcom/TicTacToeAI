@@ -12,8 +12,6 @@
 #include "LinkedList.h"
 #include <utility>
 #include <limits>
-#include <algorithm>
-#include "StartScreen.h"
 
 struct Vec{
     int x;
@@ -607,8 +605,3 @@ int minimax(GameStateNode* node, bool isMaximizing, int alpha, int beta, int dep
         ~Game() {} 
     };
 #endif
-
-
-   
-
-
