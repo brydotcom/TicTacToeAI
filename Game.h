@@ -54,7 +54,7 @@ public:
         homeScreen = false;
         board.resize(size, std::vector<int>(size,0));
 
-        home = new Texture(-1.0f, 1.0f, 0.15f, 0.15f, "./assets/homeScreen.png");
+        home = new Texture(-1.0f, 1.0f, 0.15f, 0.15f, "./assets/homeSymbol.png");
         reset = new Texture(0.85, 1.0, 0.15, 0.15,"./assets/arrow.png"); 
     }
 
